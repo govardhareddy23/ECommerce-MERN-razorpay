@@ -30,7 +30,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 // ── POST /api/auth/signup ─────────────────────────────────────────────────
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, isSeller } = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -49,7 +49,8 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    const user = await User.create({ name, email, password });
+    const role = isSeller ? 'seller' : 'user';
+    const user = await User.create({ name, email, password, role });
     sendTokenResponse(user, 201, res);
   } catch (error) {
     if (error.name === 'ValidationError') {

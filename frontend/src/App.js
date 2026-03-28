@@ -9,6 +9,7 @@ import Signup from './pages/Signup';
 import Orders from './pages/Orders';
 import Wallet from './pages/Wallet';
 import Admin from './pages/Admin';
+import SellerDashboard from './pages/SellerDashboard';
 import './index.css';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
+            <Route path="/seller-dashboard" element={<ProtectedRoute sellerOnly><SellerDashboard /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

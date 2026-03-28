@@ -6,10 +6,13 @@ import toast from 'react-hot-toast';
 const Signup = () => {
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '', isSeller: false });
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setForm({ ...form, [e.target.name]: value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +22,7 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      await signup(form.name, form.email, form.password);
+      await signup(form.name, form.email, form.password, form.isSeller);
       toast.success('Account created! Welcome to ShopFlow 🎉');
       navigate('/');
     } catch (err) {
@@ -62,6 +65,11 @@ const Signup = () => {
             <label>Confirm password</label>
             <input name="confirm" type="password" className="form-control" placeholder="••••••••"
               value={form.confirm} onChange={handleChange} autoComplete="new-password" />
+          </div>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input name="isSeller" type="checkbox" id="sellerCheck"
+              checked={form.isSeller} onChange={handleChange} style={{ cursor: 'pointer', width: '16px', height: '16px' }} />
+            <label htmlFor="sellerCheck" style={{ margin: 0, cursor: 'pointer' }}>I want to sign up as a seller</label>
           </div>
 
           <button type="submit" className="btn btn-primary btn-lg" disabled={loading} style={{ width: '100%', marginTop: '0.5rem' }}>

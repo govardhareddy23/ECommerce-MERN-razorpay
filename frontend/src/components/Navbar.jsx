@@ -45,6 +45,9 @@ const Navbar = () => {
               {user.role === 'admin' && (
                 <NavLink to="/admin" active={isActive('/admin')}>Admin</NavLink>
               )}
+              {user.role === 'seller' && (
+                <NavLink to="/seller-dashboard" active={isActive('/seller-dashboard')}>Dashboard</NavLink>
+              )}
             </>
           )}
         </div>

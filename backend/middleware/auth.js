@@ -54,4 +54,20 @@ const adminOnly = (req, res, next) => {
   res.status(403).json({ success: false, message: 'Admin access required.' });
 };
 
-module.exports = { protect, adminOnly };
+// Seller-only route guard
+const sellerOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'seller') {
+    return next();
+  }
+  res.status(403).json({ success: false, message: 'Seller access required.' });
+};
+
+// Admin or Seller route guard
+const adminOrSeller = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'seller')) {
+    return next();
+  }
+  res.status(403).json({ success: false, message: 'Admin or Seller access required.' });
+};
+
+module.exports = { protect, adminOnly, sellerOnly, adminOrSeller };

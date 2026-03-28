@@ -1,6 +1,6 @@
 const express = require('express');
 const Order = require('../models/Order');
-const { protect, adminOnly } = require('../middleware/auth');
+const { protect, adminOnly, sellerOnly } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -39,6 +39,28 @@ router.get('/:id', protect, async (req, res) => {
     res.json({ success: true, order });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
+// ── GET /api/orders/seller/revenue ────────────────────────────────────────
+router.get('/seller/revenue', protect, sellerOnly, async (req, res) => {
+  try {
+    const orders = await Order.find({ status: 'paid' })
+      .populate({
+        path: 'product',
+        match: { seller: req.user._id },
+        select: 'name price seller image',
+      })
+      .sort({ createdAt: -1 });
+
+    // Filter out orders where product didn't match the seller
+    const sellerOrders = orders.filter(order => order.product !== null);
+
+    const totalRevenue = sellerOrders.reduce((sum, order) => sum + order.amount, 0);
+
+    res.json({ success: true, count: sellerOrders.length, totalRevenue, orders: sellerOrders });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error.', error: error.message });
   }
 });
 
