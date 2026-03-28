@@ -1,7 +1,13 @@
 import axios from 'axios';
 
+let baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Fix for missing /api in deployed environment variables
+if (baseURL && !baseURL.endsWith('/api') && !baseURL.endsWith('/api/')) {
+  baseURL = `${baseURL.replace(/\/$/, '')}/api`;
+}
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL,
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });

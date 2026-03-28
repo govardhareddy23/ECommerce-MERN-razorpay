@@ -12,6 +12,7 @@ connectDB();
 // ── Security & CORS ───────────────────────────────────────────────────────
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  'https://e-commerce-mern-razorpay.vercel.app',
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
