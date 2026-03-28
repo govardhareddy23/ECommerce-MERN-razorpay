@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Helper: generate JWT
 const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
+  jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret_for_production_safety_123', {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 
@@ -57,7 +57,8 @@ router.post('/signup', async (req, res) => {
       const messages = Object.values(error.errors).map((e) => e.message);
       return res.status(400).json({ success: false, message: messages.join(', ') });
     }
-    res.status(500).json({ success: false, message: 'Server error.' });
+    console.error('Signup error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error.', stack: error.stack });
   }
 });
 

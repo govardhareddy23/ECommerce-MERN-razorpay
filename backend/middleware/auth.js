@@ -22,7 +22,7 @@ const protect = async (req, res, next) => {
     }
 
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_production_safety_123');
 
     // Attach user to request (exclude password)
     req.user = await User.findById(decoded.id).select('-password');
