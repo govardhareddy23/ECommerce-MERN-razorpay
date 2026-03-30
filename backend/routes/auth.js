@@ -30,7 +30,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 // ── POST /api/auth/signup ─────────────────────────────────────────────────
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password, isSeller } = req.body;
+    const { name, email, password, isOwner } = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -49,7 +49,7 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    const role = isSeller ? 'seller' : 'user';
+    const role = isOwner ? 'owner' : 'user';
     const user = await User.create({ name, email, password, role });
     sendTokenResponse(user, 201, res);
   } catch (error) {

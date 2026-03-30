@@ -50,20 +50,43 @@ router.post('/', async (req, res) => {
           order.razorpayPaymentId = razorpayPaymentId;
           await order.save();
 
-          // Update wallet ledger if not already done
+          // Update wallet ledger for buyer and owner if not already done
           const txExists = await Transaction.findOne({ relatedOrder: order._id });
           if (!txExists) {
-            const user = await User.findById(order.user);
-            const newBalance = (user.walletBalance || 0) - order.amount;
-            await User.findByIdAndUpdate(order.user, { walletBalance: newBalance });
-            await Transaction.create({
-              user: order.user,
-              type: 'debit',
-              amount: order.amount,
-              description: `[Webhook] Purchase: ${order.productSnapshot.name}`,
-              relatedOrder: order._id,
-              balanceAfter: newBalance,
-            });
+            // 1. Debit buyer
+            const buyerParams = await User.findById(order.user);
+            if (buyerParams) {
+              const newBuyerBalance = (buyerParams.walletBalance || 0) - order.amount;
+              await User.findByIdAndUpdate(order.user, { walletBalance: newBuyerBalance });
+              await Transaction.create({
+                user: order.user,
+                type: 'debit',
+                amount: order.amount,
+                description: `[Webhook] Purchase: ${order.productSnapshot.name}`,
+                relatedOrder: order._id,
+                balanceAfter: newBuyerBalance,
+              });
+            }
+
+            // 2. Credit owner
+            const Product = require('../models/Product');
+            const productDoc = await Product.findById(order.product);
+            if (productDoc && productDoc.owner) {
+              const ownerId = productDoc.owner;
+              const ownerParams = await User.findById(ownerId);
+              if (ownerParams) {
+                const newBalance = (ownerParams.walletBalance || 0) + order.amount;
+                await User.findByIdAndUpdate(ownerId, { walletBalance: newBalance });
+                await Transaction.create({
+                  user: ownerId,
+                  type: 'credit',
+                  amount: order.amount,
+                  description: `[Webhook] Sale: ${order.productSnapshot.name}`,
+                  relatedOrder: order._id,
+                  balanceAfter: newBalance,
+                });
+              }
+            }
           }
           console.log(`✅ Order ${order._id} marked as paid via webhook`);
         }

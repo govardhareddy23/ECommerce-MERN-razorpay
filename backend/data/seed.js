@@ -3,33 +3,39 @@ const mongoose = require('mongoose');
 const connectDB = require('../config/db');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const Order = require('../models/Order');
+const Transaction = require('../models/Transaction');
 const products = require('./products');
 
 const seed = async () => {
   await connectDB();
 
   try {
-    // Clear existing products
+    // 1. Clear all collections
     await Product.deleteMany({});
-    console.log('🗑  Cleared existing products');
+    await User.deleteMany({});
+    await Order.deleteMany({});
+    await Transaction.deleteMany({});
+    console.log('🗑  Cleared all existing data (Users, Products, Orders, Transactions)');
 
-    // Insert 20 products
-    await Product.insertMany(products);
-    console.log(`✅ Seeded ${products.length} products`);
+    // 2. Create the demo owner user
+    const ownerUser = await User.create({
+      name: 'Owner',
+      email: 'owner@shop.com',
+      password: 'owner@1234',
+      role: 'owner',
+    });
+    console.log('✅ Owner user created: owner@shop.com / owner@1234');
 
-    // Create a demo admin user (idempotent)
-    const exists = await User.findOne({ email: 'admin@shop.com' });
-    if (!exists) {
-      await User.create({
-        name: 'Admin',
-        email: 'admin@shop.com',
-        password: 'Admin@1234',
-        role: 'admin',
-      });
-      console.log('✅ Admin user created: admin@shop.com / Admin@1234');
-    } else {
-      console.log('ℹ  Admin user already exists');
-    }
+    // 3. Attach the owner user ID to every product before insertion
+    const productsWithOwner = products.map(product => ({
+      ...product,
+      owner: ownerUser._id,
+    }));
+
+    // 4. Insert Products
+    await Product.insertMany(productsWithOwner);
+    console.log(`✅ Seeded ${productsWithOwner.length} products with owner reference`);
 
     console.log('\n🚀 Seed complete! Run: npm run dev\n');
   } catch (err) {

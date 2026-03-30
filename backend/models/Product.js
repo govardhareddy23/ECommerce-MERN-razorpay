@@ -29,14 +29,10 @@ const productSchema = new mongoose.Schema(
       default: 100,
       min: 0,
     },
-    seller: {
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-    },
-    isApproved: {
-      type: Boolean,
-      default: false,
     },
   },
   { timestamps: true }
